@@ -1,0 +1,44 @@
+version: '3'
+
+vars:
+  BINARY_NAME: acprun
+  BIN_DIR: bin
+  VERSION:
+    sh: git describe --tags --always 2>/dev/null || echo "1.0.0"
+  COMMIT:
+    sh: git rev-parse --short HEAD 2>/dev/null || echo "none"
+  DATE:
+    sh: date -u +"%Y-%m-%dT%H:%M:%SZ"
+
+tasks:
+  default:
+    desc: Build acprun binary
+    cmds:
+      - task: build
+
+  build:
+    desc: Build static binary with CGO_ENABLED=0
+    cmds:
+      - CGO_ENABLED=0 go build -ldflags "-s -w -X github.com/baldaworks/acprun/internal/cli.Version={{.VERSION}} -X github.com/baldaworks/acprun/internal/cli.Commit={{.COMMIT}} -X github.com/baldaworks/acprun/internal/cli.Date={{.DATE}}" -o {{.BIN_DIR}}/{{.BINARY_NAME}} ./cmd/acprun
+
+  test:
+    desc: Run all tests
+    cmds:
+      - CGO_ENABLED=0 go test -v ./...
+
+  test:coverage:
+    desc: Run tests with coverage reporting
+    cmds:
+      - CGO_ENABLED=0 go test -coverprofile=coverage.out ./...
+      - go tool cover -func=coverage.out
+
+  dist:
+    desc: Build and stage Omnidist distribution artifacts
+    cmds:
+      - omnidist build
+      - omnidist stage --only npm
+
+  clean:
+    desc: Remove build binaries, coverage and Omnidist staging artifacts
+    cmds:
+      - rm -rf {{.BIN_DIR}} .omnidist/default/dist .omnidist/default/stage coverage.out
