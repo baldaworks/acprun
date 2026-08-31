@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -86,6 +87,7 @@ func (c *Client) FetchRegistry(ctx context.Context) (*Registry, error) {
 	}
 
 	manifestPath := c.cacheManager.ManifestPath()
+	slog.Debug("checking registry manifest cache", "manifest_path", manifestPath, "offline", c.offline)
 
 	// In offline mode, strictly load from cache
 	if c.offline {
@@ -94,6 +96,7 @@ func (c *Client) FetchRegistry(ctx context.Context) (*Registry, error) {
 			return nil, fmt.Errorf("offline mode requested but cached registry manifest is unavailable: %w", err)
 		}
 		c.cached = reg
+		slog.Debug("loaded registry manifest in offline mode", "manifest_path", manifestPath, "agents_count", len(reg.Agents))
 		return reg, nil
 	}
 
@@ -103,17 +106,20 @@ func (c *Client) FetchRegistry(ctx context.Context) (*Registry, error) {
 			reg, err := c.loadFromCache(manifestPath)
 			if err == nil {
 				c.cached = reg
+				slog.Debug("loaded fresh registry manifest from cache", "manifest_path", manifestPath, "agents_count", len(reg.Agents))
 				return reg, nil
 			}
 		}
 	}
 
 	// Fetch from network
+	slog.Debug("fetching registry manifest from network", "url", c.registryURL)
 	reg, fetchErr := c.fetchFromNetwork(ctx)
 	if fetchErr == nil {
 		// Save to cache atomically
 		_ = c.saveToCache(manifestPath, reg)
 		c.cached = reg
+		slog.Debug("fetched and cached registry manifest", "url", c.registryURL, "agents_count", len(reg.Agents))
 		return reg, nil
 	}
 
@@ -121,6 +127,7 @@ func (c *Client) FetchRegistry(ctx context.Context) (*Registry, error) {
 	cachedReg, cacheErr := c.loadFromCache(manifestPath)
 	if cacheErr == nil {
 		c.cached = cachedReg
+		slog.Warn("network fetch failed, falling back to cached manifest", "url", c.registryURL, "error", fetchErr)
 		return cachedReg, nil
 	}
 

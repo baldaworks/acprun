@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -27,6 +28,7 @@ func (r *Resolver) resolveBinary(ctx context.Context, agent *registry.Agent, tar
 	// Check if already extracted and executable exists
 	if info, err := os.Stat(execPath); err == nil && !info.IsDir() {
 		_ = os.Chmod(execPath, 0755)
+		slog.Debug("using cached agent binary", "agent_id", agent.ID, "executable", execPath)
 		return &ResolvedCommand{
 			AgentID:       agent.ID,
 			Version:       agent.Version,
@@ -55,6 +57,7 @@ func (r *Resolver) resolveBinary(ctx context.Context, agent *registry.Agent, tar
 	}
 	archivePath := filepath.Join(downloadsDir, archiveFilename)
 
+	slog.Info("downloading agent binary archive", "agent_id", agent.ID, "version", agent.Version, "url", target.Archive)
 	if err := r.downloadAndVerify(ctx, target.Archive, archivePath, target.SHA256); err != nil {
 		return nil, err
 	}
@@ -64,6 +67,7 @@ func (r *Resolver) resolveBinary(ctx context.Context, agent *registry.Agent, tar
 		return nil, fmt.Errorf("failed to create agent directory: %w", err)
 	}
 
+	slog.Debug("extracting agent binary archive", "agent_id", agent.ID, "archive", archivePath, "dest", agentDir)
 	if err := ExtractArchive(archivePath, agentDir); err != nil {
 		// Clean incomplete extraction directory on error
 		_ = os.RemoveAll(agentDir)
@@ -77,6 +81,7 @@ func (r *Resolver) resolveBinary(ctx context.Context, agent *registry.Agent, tar
 
 	// Set executable permissions
 	_ = os.Chmod(execPath, 0755)
+	slog.Debug("extracted agent binary successfully", "agent_id", agent.ID, "executable", execPath)
 
 	return &ResolvedCommand{
 		AgentID:       agent.ID,

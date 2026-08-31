@@ -3,6 +3,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -73,6 +74,8 @@ func (r *Resolver) Resolve(ctx context.Context, agent *registry.Agent, opts Reso
 		targetPlatform = normalized
 	}
 
+	slog.Debug("resolving agent distribution", "agent_id", agent.ID, "version", agent.Version, "target_platform", targetPlatform, "format", opts.Format)
+
 	var cmd *ResolvedCommand
 	var err error
 
@@ -120,5 +123,6 @@ func (r *Resolver) Resolve(ctx context.Context, agent *registry.Agent, opts Reso
 		}
 	}
 
+	slog.Debug("resolved agent command", "agent_id", agent.ID, "executable", cmd.Executable, "format", cmd.Format, "args_count", len(cmd.Args))
 	return cmd, nil
 }

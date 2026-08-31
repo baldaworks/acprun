@@ -96,3 +96,42 @@ func TestRunnerContextCancellation(t *testing.T) {
 		t.Errorf("expected non-zero exit code on cancelled context, got %d", exitCode)
 	}
 }
+
+func TestRunnerStderrStreamForwarding(t *testing.T) {
+	shPath, err := exec.LookPath("sh")
+	if err != nil {
+		t.Skip("sh binary not available")
+	}
+
+	var stdout, stderr bytes.Buffer
+	r := &Runner{
+		Stdout: &stdout,
+		Stderr: &stderr,
+	}
+
+	resCmd := &resolver.ResolvedCommand{
+		AgentID:    "test-agent",
+		Version:    "1.0.0",
+		Format:     "binary",
+		Executable: shPath,
+		Args:       []string{"-c", "echo 'error message' >&2"},
+	}
+
+	exitCode, err := r.Run(context.Background(), resCmd)
+	if err != nil {
+		t.Fatalf("Run failed: %v", err)
+	}
+	if exitCode != 0 {
+		t.Errorf("expected exit code 0, got %d", exitCode)
+	}
+
+	if stdout.Len() != 0 {
+		t.Errorf("expected empty stdout, got %q", stdout.String())
+	}
+
+	stderrOut := strings.TrimSpace(stderr.String())
+	if stderrOut != "error message" {
+		t.Errorf("expected stderr to contain 'error message', got %q", stderrOut)
+	}
+}
+

@@ -45,6 +45,9 @@ As well as explicit runner and management subcommands:
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			InitLogger(globals.verbose)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()

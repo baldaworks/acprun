@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/baldaworks/acprun/internal/resolver"
 )
@@ -83,9 +85,17 @@ func (r *Runner) Run(ctx context.Context, resCmd *resolver.ResolvedCommand) (int
 		execCmd.Stderr = os.Stderr
 	}
 
+	start := time.Now()
+	slog.Debug("spawning agent process", "agent_id", resCmd.AgentID, "executable", resCmd.Executable, "args", resCmd.Args)
+
 	// Start process
 	if err := execCmd.Start(); err != nil {
+		slog.Error("failed to start agent process", "agent_id", resCmd.AgentID, "executable", resCmd.Executable, "error", err)
 		return 1, fmt.Errorf("failed to start process %s: %w", resCmd.Executable, err)
+	}
+
+	if execCmd.Process != nil {
+		slog.Debug("agent process started", "agent_id", resCmd.AgentID, "pid", execCmd.Process.Pid)
 	}
 
 	// Forward OS signals to child process
@@ -106,16 +116,23 @@ func (r *Runner) Run(ctx context.Context, resCmd *resolver.ResolvedCommand) (int
 
 	// Wait for process termination
 	err := execCmd.Wait()
+	duration := time.Since(start)
+
 	if err != nil {
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
-			return exitErr.ExitCode(), nil
+			code := exitErr.ExitCode()
+			slog.Debug("agent process completed with non-zero exit code", "agent_id", resCmd.AgentID, "exit_code", code, "duration_ms", duration.Milliseconds())
+			return code, nil
 		}
 		if ctx.Err() != nil {
+			slog.Debug("agent process cancelled via context", "agent_id", resCmd.AgentID, "duration_ms", duration.Milliseconds())
 			return 130, ctx.Err()
 		}
+		slog.Error("agent process exited with error", "agent_id", resCmd.AgentID, "error", err, "duration_ms", duration.Milliseconds())
 		return 1, err
 	}
 
+	slog.Debug("agent process completed successfully", "agent_id", resCmd.AgentID, "exit_code", 0, "duration_ms", duration.Milliseconds())
 	return 0, nil
 }
