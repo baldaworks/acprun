@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -133,11 +132,8 @@ func TestVersionCommand(t *testing.T) {
 }
 
 func TestRootHelpWhenNoArgs(t *testing.T) {
-	output, err := executeCommand([]string{})
+	_, err := executeCommand([]string{})
 	if err != nil {
 		t.Fatalf("root help failed: %v", err)
-	}
-	if !strings.Contains(output, "acprun") {
-		// Output may be captured in stdout or buffer
 	}
 }

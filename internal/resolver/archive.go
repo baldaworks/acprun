@@ -157,7 +157,7 @@ func extractTarReader(tr *tar.Reader, destDir string) error {
 			if err := os.MkdirAll(targetPath, 0755); err != nil {
 				return fmt.Errorf("failed to create directory %s: %w", targetPath, err)
 			}
-		case tar.TypeReg, tar.TypeRegA:
+		case tar.TypeReg:
 			if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
 				return fmt.Errorf("failed to create parent directory for %s: %w", targetPath, err)
 			}
