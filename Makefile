@@ -27,4 +27,4 @@ clean:
 
 dist:
 	omnidist build
-	omnidist stage
+	omnidist stage --only npm
