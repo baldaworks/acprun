@@ -24,15 +24,22 @@ jobs:
           node -e '
             const fs = require("fs");
             const path = require("path");
-            const npmDir = ".omnidist/default/npm";
-            for (const pkg of fs.readdirSync(npmDir)) {
-              if (pkg !== "@baldaworks/acprun" && fs.existsSync(path.join(npmDir, pkg, "package.json"))) {
-                const p = path.join(npmDir, pkg, "package.json");
-                const j = JSON.parse(fs.readFileSync(p, "utf8"));
-                delete j.bin;
-                fs.writeFileSync(p, JSON.stringify(j, null, 2) + "\n");
+            function walk(dir) {
+              for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                const full = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                  walk(full);
+                } else if (entry.name === "package.json") {
+                  const j = JSON.parse(fs.readFileSync(full, "utf8"));
+                  if (j.name !== "@baldaworks/acprun" && j.bin) {
+                    delete j.bin;
+                    fs.writeFileSync(full, JSON.stringify(j, null, 2) + "\n");
+                    console.log("Removed bin from", full);
+                  }
+                }
               }
             }
+            walk(".omnidist/default/npm");
           '
       - name: Verify artifacts
         run: omnidist --profile 'default' verify --only npm
