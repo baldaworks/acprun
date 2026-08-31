@@ -1,0 +1,16 @@
+version: "2"
+
+linters:
+  disable:
+    - wsl
+    - wsl_v5
+    - depguard
+    - gomodguard
+    - testpackage
+    - errcheck
+    - funcorder
+    - gocognit
+    - godot
+    - mnd
+    - nestif
+    - nlreturn
