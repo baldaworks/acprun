@@ -1,6 +1,6 @@
 module github.com/baldaworks/acprun
 
-go 1.26.5
+go 1.24.0
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
