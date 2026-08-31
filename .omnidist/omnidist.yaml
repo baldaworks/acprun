@@ -28,8 +28,3 @@ profiles:
                 registry: https://registry.npmjs.org
                 access: public
                 include-readme: true
-            uv:
-                package: acprun
-                index-url: https://upload.pypi.org/legacy/
-                linux-tag: manylinux2014
-                include-readme: true

@@ -22,11 +22,6 @@ go install github.com/baldaworks/acprun/cmd/acprun@latest
 npx -y @baldaworks/acprun list
 ```
 
-### Via UVX (Omnidist)
-```bash
-uvx acprun list
-```
-
 ---
 
 ## Quick Start & One-Shot Mode
