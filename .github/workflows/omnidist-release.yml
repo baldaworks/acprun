@@ -19,7 +19,21 @@ jobs:
       - name: Build artifacts
         run: omnidist --profile 'default' build
       - name: Stage artifacts
-        run: omnidist --profile 'default' stage --only npm
+        run: |
+          omnidist --profile 'default' stage --only npm
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+            const npmDir = ".omnidist/default/npm";
+            for (const pkg of fs.readdirSync(npmDir)) {
+              if (pkg !== "@baldaworks/acprun" && fs.existsSync(path.join(npmDir, pkg, "package.json"))) {
+                const p = path.join(npmDir, pkg, "package.json");
+                const j = JSON.parse(fs.readFileSync(p, "utf8"));
+                delete j.bin;
+                fs.writeFileSync(p, JSON.stringify(j, null, 2) + "\n");
+              }
+            }
+          '
       - name: Verify artifacts
         run: omnidist --profile 'default' verify --only npm
       - name: Pack staged artifacts
