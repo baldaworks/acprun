@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "acprun",
+  "project_id": "25ea0dbe-c31a-416f-81c8-230f2d18eda2"
+}
