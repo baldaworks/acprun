@@ -7,7 +7,7 @@ import (
 )
 
 // DefaultCacheDir returns the default user cache directory for ACP registry and agents.
-// Follows $ACP_CACHE_DIR, os.UserCacheDir()/norma/acp-registry, or ~/.cache/norma/acp-registry.
+// Follows $ACP_CACHE_DIR, os.UserCacheDir()/acprun, or ~/.cache/acprun.
 func DefaultCacheDir() string {
 	if envDir := os.Getenv("ACP_CACHE_DIR"); envDir != "" {
 		return envDir
@@ -15,14 +15,14 @@ func DefaultCacheDir() string {
 
 	userCache, err := os.UserCacheDir()
 	if err == nil && userCache != "" {
-		return filepath.Join(userCache, "norma", "acp-registry")
+		return filepath.Join(userCache, "acprun")
 	}
 
 	home := os.Getenv("HOME")
 	if home == "" {
 		home = "."
 	}
-	return filepath.Join(home, ".cache", "norma", "acp-registry")
+	return filepath.Join(home, ".cache", "acprun")
 }
 
 // CacheManager manages local caching of manifests, downloaded archives, and extracted binaries.

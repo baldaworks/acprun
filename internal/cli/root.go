@@ -59,7 +59,7 @@ As well as explicit runner and management subcommands:
 	}
 
 	rootCmd.PersistentFlags().StringVarP(&globals.registryURL, "registry", "r", "", "ACP Registry URL (default: official CDN, env: ACP_REGISTRY_URL)")
-	rootCmd.PersistentFlags().StringVar(&globals.cacheDir, "cache-dir", "", "Cache directory path (default: $USER_CACHE_DIR/norma/acp-registry, env: ACP_CACHE_DIR)")
+	rootCmd.PersistentFlags().StringVar(&globals.cacheDir, "cache-dir", "", "Cache directory path (default: $USER_CACHE_DIR/acprun, env: ACP_CACHE_DIR)")
 	rootCmd.PersistentFlags().BoolVar(&globals.offline, "offline", false, "Offline mode: use cached manifests and binaries only")
 	rootCmd.PersistentFlags().BoolVarP(&globals.verbose, "verbose", "v", false, "Enable verbose output")
 

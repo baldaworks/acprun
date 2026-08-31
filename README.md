@@ -6,7 +6,7 @@ It transparently handles distribution resolution across:
 - **Binary Archives**: Detects host OS and CPU architecture (`linux-x86_64`, `linux-aarch64`, `darwin-aarch64`, `darwin-x86_64`, `windows-x86_64`, `windows-aarch64`), downloads `.zip` or `.tar.gz` archives, validates optional SHA256 integrity checksums, safely extracts to local user cache (with strict Zip Slip protection), sets `0755` executable permissions, and builds the command vector.
 - **NPX Packages**: Formats `["npx", "-y", <package>, <args...>]` and sets environment variables.
 - **UVX Packages**: Formats `["uvx", <package>, <args...>]` and sets environment variables.
-- **Offline Resilient Caching**: Caches registry manifests and downloaded binaries under `os.UserCacheDir()/norma/acp-registry/` for fast, offline reuse.
+- **Offline Resilient Caching**: Caches registry manifests and downloaded binaries under `os.UserCacheDir()/acprun/` for fast, offline reuse.
 
 ---
 
@@ -54,7 +54,7 @@ acprun amp-acp --verbose
 ### Global Flags
 ```text
   -r, --registry string    ACP Registry URL (default: official CDN, env: ACP_REGISTRY_URL)
-      --cache-dir string   Custom cache directory (default: $USER_CACHE_DIR/norma/acp-registry, env: ACP_CACHE_DIR)
+      --cache-dir string   Custom cache directory (default: $USER_CACHE_DIR/acprun, env: ACP_CACHE_DIR)
       --offline            Offline mode: use cached manifests and binaries only
   -v, --verbose            Enable verbose output
   -h, --help               Help for acprun
