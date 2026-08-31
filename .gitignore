@@ -1,6 +1,19 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-# Beads / Dolt files (added by bd init)
-.dolt/
-*.db
-.beads-credential-key
-.beads/proxieddb/
+# Omnidist dist & build artifacts
+.omnidist/default/dist/
+.omnidist/default/stage/
+.omnidist/default/.build-version
+
+# Test & coverage
+coverage.out
+*.test
+
+# Environment & local files
+.env

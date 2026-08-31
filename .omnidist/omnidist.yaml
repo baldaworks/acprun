@@ -1,0 +1,35 @@
+profiles:
+    default:
+        tool:
+            name: acprun
+            main: ./cmd/acprun
+        version:
+            source: git-tag
+        targets:
+            - os: darwin
+              arch: amd64
+            - os: darwin
+              arch: arm64
+            - os: linux
+              arch: amd64
+            - os: linux
+              arch: arm64
+            - os: windows
+              arch: amd64
+            - os: windows
+              arch: arm64
+        build:
+            ldflags: -s -w
+            tags: []
+            cgo: false
+        distributions:
+            npm:
+                package: '@baldaworks/acprun'
+                registry: https://registry.npmjs.org
+                access: public
+                include-readme: true
+            uv:
+                package: acprun
+                index-url: https://upload.pypi.org/legacy/
+                linux-tag: manylinux2014
+                include-readme: true
