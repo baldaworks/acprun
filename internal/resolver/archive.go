@@ -80,6 +80,7 @@ func extractZip(archivePath, destDir string) error {
 			mode = 0644
 		}
 
+		_ = os.Remove(targetPath)
 		outFile, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
 			rc.Close()
@@ -169,6 +170,7 @@ func extractTarReader(tr *tar.Reader, destDir string) error {
 				mode = 0644
 			}
 
+			_ = os.Remove(targetPath)
 			outFile, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 			if err != nil {
 				return fmt.Errorf("failed to create output file %s: %w", targetPath, err)

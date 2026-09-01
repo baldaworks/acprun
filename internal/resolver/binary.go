@@ -57,9 +57,13 @@ func (r *Resolver) resolveBinary(ctx context.Context, agent *registry.Agent, tar
 	}
 	archivePath := filepath.Join(downloadsDir, archiveFilename)
 
-	slog.Info("downloading agent binary archive", "agent_id", agent.ID, "version", agent.Version, "url", target.Archive)
-	if err := r.downloadAndVerify(ctx, target.Archive, archivePath, target.SHA256); err != nil {
-		return nil, err
+	if verifyFileSHA256(archivePath, target.SHA256) {
+		slog.Debug("using cached download archive", "agent_id", agent.ID, "archive", archivePath)
+	} else {
+		slog.Info("downloading agent binary archive", "agent_id", agent.ID, "version", agent.Version, "url", target.Archive)
+		if err := r.downloadAndVerify(ctx, target.Archive, archivePath, target.SHA256); err != nil {
+			return nil, err
+		}
 	}
 
 	// Extract archive to agentDir
@@ -149,3 +153,22 @@ func (r *Resolver) downloadAndVerify(ctx context.Context, url, destPath, expecte
 
 	return nil
 }
+
+func verifyFileSHA256(filePath, expectedSHA256 string) bool {
+	if expectedSHA256 == "" {
+		return false
+	}
+	f, err := os.Open(filePath)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, f); err != nil {
+		return false
+	}
+	actual := hex.EncodeToString(hasher.Sum(nil))
+	return strings.EqualFold(actual, expectedSHA256)
+}
+
