@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -79,14 +80,122 @@ As well as explicit runner and management subcommands:
 
 // Execute runs the CLI and returns the process exit code.
 func Execute() int {
+	return ExecuteArgs(os.Args[1:])
+}
+
+// ExecuteArgs runs the CLI with the provided arguments and returns the process exit code.
+func ExecuteArgs(args []string) int {
 	rootCmd := NewRootCmd()
 	ctx := context.Background()
+
+	rootCmd.SetArgs(NormalizeArgs(rootCmd, args))
 
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return 1
 	}
 	return 0
+}
+
+// NormalizeArgs transforms CLI arguments so that one-shot agent execution (e.g. `acprun <agent-id>`)
+// is routed to the `run` subcommand when the first positional argument is not a known subcommand.
+func NormalizeArgs(cmd *cobra.Command, args []string) []string {
+	i := 0
+	for i < len(args) {
+		arg := args[i]
+
+		// Handle POSIX end of options delimiter
+		if arg == "--" {
+			if i+1 < len(args) && !isSubcommand(cmd, args[i+1]) {
+				newArgs := make([]string, 0, len(args)+1)
+				newArgs = append(newArgs, "run")
+				newArgs = append(newArgs, args...)
+				return newArgs
+			}
+			return args
+		}
+
+		if strings.HasPrefix(arg, "-") {
+			// Flag with '=' format, e.g. --registry=https://... or -r=https://...
+			if strings.Contains(arg, "=") {
+				i++
+				continue
+			}
+
+			flagName := strings.TrimLeft(arg, "-")
+			if isFlagWithValue(cmd, flagName) {
+				// Flag consumes next argument as its value
+				i += 2
+				continue
+			}
+
+			// Boolean or standalone flag
+			i++
+			continue
+		}
+
+		// First non-flag argument encountered
+		if isSubcommand(cmd, arg) {
+			// Recognized subcommand; leave args as is
+			return args
+		}
+
+		// Found agent ID: route to `run` subcommand by prepending "run"
+		newArgs := make([]string, 0, len(args)+1)
+		newArgs = append(newArgs, "run")
+		newArgs = append(newArgs, args...)
+		return newArgs
+	}
+
+	return args
+}
+
+func isSubcommand(cmd *cobra.Command, name string) bool {
+	if name == "help" || name == "completion" || strings.HasPrefix(name, "__complete") {
+		return true
+	}
+	for _, sub := range cmd.Commands() {
+		if sub.Name() == name {
+			return true
+		}
+		for _, alias := range sub.Aliases {
+			if alias == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func isFlagWithValue(cmd *cobra.Command, flagName string) bool {
+	if len(flagName) == 1 {
+		if f := cmd.PersistentFlags().ShorthandLookup(flagName); f != nil {
+			return f.Value.Type() != "bool"
+		}
+		if f := cmd.Flags().ShorthandLookup(flagName); f != nil {
+			return f.Value.Type() != "bool"
+		}
+		for _, sub := range cmd.Commands() {
+			if f := sub.Flags().ShorthandLookup(flagName); f != nil {
+				return f.Value.Type() != "bool"
+			}
+		}
+		return false
+	}
+
+	if f := cmd.PersistentFlags().Lookup(flagName); f != nil {
+		return f.Value.Type() != "bool"
+	}
+	if f := cmd.Flags().Lookup(flagName); f != nil {
+		return f.Value.Type() != "bool"
+	}
+	for _, sub := range cmd.Commands() {
+		if f := sub.Flags().Lookup(flagName); f != nil {
+			return f.Value.Type() != "bool"
+		}
+	}
+
+	return false
 }
 
 func getRegistryClient() *registry.Client {
