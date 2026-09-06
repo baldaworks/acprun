@@ -131,6 +131,8 @@ acprun cache clean --manifests-only
 ```text
   -r, --registry string    ACP Registry URL (default: official CDN, env: ACP_REGISTRY_URL)
       --cache-dir string   Custom cache directory (default: $USER_CACHE_DIR/acprun, env: ACP_CACHE_DIR)
+      --download-timeout duration
+                           Binary archive download timeout (default 5m0s)
       --offline            Offline mode: use cached manifests and binaries only
   -v, --verbose            Enable verbose output
   -h, --help               Help for acprun

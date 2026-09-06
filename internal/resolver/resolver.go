@@ -37,6 +37,10 @@ type Resolver struct {
 	httpClient   *http.Client
 }
 
+// DefaultDownloadTimeout bounds one binary archive download when callers do
+// not provide their own HTTP client.
+const DefaultDownloadTimeout = 5 * time.Minute
+
 // NewResolver creates a new agent Resolver.
 func NewResolver(cacheManager *registry.CacheManager, httpClient *http.Client) *Resolver {
 	if cacheManager == nil {
@@ -44,7 +48,7 @@ func NewResolver(cacheManager *registry.CacheManager, httpClient *http.Client) *
 	}
 	if httpClient == nil {
 		httpClient = &http.Client{
-			Timeout: 5 * time.Minute,
+			Timeout: DefaultDownloadTimeout,
 		}
 	}
 	return &Resolver{

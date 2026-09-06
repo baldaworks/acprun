@@ -4,8 +4,10 @@ package cli
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -15,10 +17,11 @@ import (
 )
 
 type globalFlags struct {
-	registryURL string
-	cacheDir    string
-	offline     bool
-	verbose     bool
+	registryURL     string
+	cacheDir        string
+	offline         bool
+	verbose         bool
+	downloadTimeout time.Duration
 }
 
 var globals globalFlags
@@ -46,8 +49,12 @@ As well as explicit runner and management subcommands:
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if globals.downloadTimeout <= 0 {
+				return fmt.Errorf("download timeout must be greater than zero")
+			}
 			InitLogger(globals.verbose)
+			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -66,6 +73,7 @@ As well as explicit runner and management subcommands:
 	rootCmd.PersistentFlags().StringVar(&globals.cacheDir, "cache-dir", "", "Cache directory path (default: $USER_CACHE_DIR/acprun, env: ACP_CACHE_DIR)")
 	rootCmd.PersistentFlags().BoolVar(&globals.offline, "offline", false, "Offline mode: use cached manifests and binaries only")
 	rootCmd.PersistentFlags().BoolVarP(&globals.verbose, "verbose", "v", false, "Enable verbose output")
+	rootCmd.PersistentFlags().DurationVar(&globals.downloadTimeout, "download-timeout", resolver.DefaultDownloadTimeout, "Binary archive download timeout")
 
 	// Register subcommands
 	rootCmd.AddCommand(newListCmd())
@@ -207,7 +215,7 @@ func getRegistryClient() *registry.Client {
 }
 
 func getResolver(client *registry.Client) *resolver.Resolver {
-	return resolver.NewResolver(client.CacheManager(), nil)
+	return resolver.NewResolver(client.CacheManager(), &http.Client{Timeout: globals.downloadTimeout})
 }
 
 func runAgent(ctx context.Context, agentID string, extraArgs []string, extraEnv map[string]string, platformOverride string, noDownload bool) error {

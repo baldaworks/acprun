@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 const sampleRegistryJSON = `{
@@ -225,5 +226,22 @@ func TestRootHelpWhenNoArgs(t *testing.T) {
 	_, err := executeCommand([]string{})
 	if err != nil {
 		t.Fatalf("root help failed: %v", err)
+	}
+}
+
+func TestDownloadTimeoutFlag(t *testing.T) {
+	_, err := executeCommand([]string{"version", "--download-timeout", "20m"})
+	if err != nil {
+		t.Fatalf("version with download timeout failed: %v", err)
+	}
+	if globals.downloadTimeout != 20*time.Minute {
+		t.Fatalf("download timeout = %s, want 20m", globals.downloadTimeout)
+	}
+}
+
+func TestDownloadTimeoutMustBePositive(t *testing.T) {
+	_, err := executeCommand([]string{"version", "--download-timeout", "0s"})
+	if err == nil {
+		t.Fatal("zero download timeout unexpectedly succeeded")
 	}
 }

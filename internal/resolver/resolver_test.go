@@ -9,9 +9,20 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/baldaworks/acprun/internal/registry"
 )
+
+func TestNewResolverUsesDefaultDownloadTimeout(t *testing.T) {
+	res := NewResolver(nil, nil)
+	if res.httpClient.Timeout != DefaultDownloadTimeout {
+		t.Fatalf("download timeout = %s, want %s", res.httpClient.Timeout, DefaultDownloadTimeout)
+	}
+	if DefaultDownloadTimeout != 5*time.Minute {
+		t.Fatalf("default download timeout = %s, want 5m", DefaultDownloadTimeout)
+	}
+}
 
 func TestResolveNPX(t *testing.T) {
 	agent := &registry.Agent{
