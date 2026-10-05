@@ -1,5 +1,18 @@
 profiles:
     default:
+        description: CLI to discover, inspect, resolve, and run agents from the Agent Client Protocol (ACP) Registry using native binaries, npx, or uvx
+        keywords:
+            - acp
+            - agent-client-protocol
+            - ai-agents
+            - coding-agents
+            - agent-runner
+            - agent-registry
+            - registry
+            - cli
+            - npx
+            - uvx
+        license: MIT
         tool:
             name: acprun
             main: ./cmd/acprun
@@ -24,7 +37,11 @@ profiles:
             cgo: false
         distributions:
             npm:
-                package: '@baldaworks/acprun'
+                package: acprun
+                aliases:
+                    - '@baldaworks/acprun'
+                platform-package: '@baldaworks/acprun'
                 registry: https://registry.npmjs.org
                 access: public
+                repository-url: git+https://github.com/baldaworks/acprun.git
                 include-readme: true

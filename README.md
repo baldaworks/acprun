@@ -7,9 +7,9 @@
 [![npm version](https://img.shields.io/npm/v/%40baldaworks%2Facprun)](https://www.npmjs.com/package/@baldaworks/acprun)
 [![License: MIT](https://img.shields.io/github/license/baldaworks/acprun)](LICENSE)
 
-## Universal agent runner and registry client for the Agent Client Protocol (ACP)
+## ACP Registry client and agent runner
 
-`acprun` is a CLI tool, runner, and Go library for discovering, resolving, and running agents published in the [Agent Client Protocol (ACP) Registry](https://agentclientprotocol.com).
+`acprun` is a CLI for discovering, inspecting, resolving, and running agents published in the [Agent Client Protocol (ACP) Registry](https://agentclientprotocol.com). It supports native binaries, `npx`, and `uvx`.
 
 It transparently handles distribution resolution across:
 - **Binary Archives**: Detects host OS and CPU architecture (`linux-x86_64`, `linux-aarch64`, `darwin-aarch64`, `darwin-x86_64`, `windows-x86_64`, `windows-aarch64`), downloads `.zip` or `.tar.gz` archives, validates optional SHA256 integrity checksums, safely extracts to local user cache (with strict Zip Slip protection), sets `0755` executable permissions, and builds the command vector.
@@ -21,18 +21,28 @@ It transparently handles distribution resolution across:
 
 ## Installation and quick start
 
+Install `acprun` through either npm launcher or as a Go binary.
+
 ### npm package (recommended)
 
 For repeated direct shell use, install the npm launcher globally:
 
 ```bash
+npm install --global acprun@latest
+acprun version
+```
+
+The equivalent scoped package is also available as `@baldaworks/acprun`:
+
+```bash
 npm install --global @baldaworks/acprun@latest
-acprun --version
 ```
 
 For one-shot execution without global installation, run the complete `npx` command:
 
 ```bash
+npx --yes acprun@latest list
+# Equivalent scoped launcher:
 npx --yes @baldaworks/acprun@latest list
 ```
 
@@ -41,6 +51,8 @@ npx --yes @baldaworks/acprun@latest list
 ```bash
 go install github.com/baldaworks/acprun/cmd/acprun@latest
 ```
+
+These packages install the `acprun` CLI. When running an agent, `acprun` selects that agent's binary, `npx`, or `uvx` distribution from the Registry.
 
 ---
 
@@ -168,7 +180,15 @@ acprun cache clean --manifests-only
 
 ## Distribution
 
-The npm distribution uses CGO-disabled native executables for macOS and Linux on AMD64/ARM64 and Windows AMD64/ARM64 behind the [`@baldaworks/acprun`](https://www.npmjs.com/package/@baldaworks/acprun) launcher.
+The npm distribution uses CGO-disabled native executables for macOS and Linux on AMD64/ARM64 and Windows AMD64/ARM64 behind the equivalent [`acprun`](https://www.npmjs.com/package/acprun) and [`@baldaworks/acprun`](https://www.npmjs.com/package/@baldaworks/acprun) launchers. Both launchers share the same scoped platform packages.
+
+Description, keywords, and MIT license metadata are defined once in `.omnidist/omnidist.yaml` and inherited by both npm launchers.
+
+### Release setup
+
+Tag-triggered releases stage and verify the npm packages before publishing and attach native binaries to the GitHub release. Configure the `NPM_PUBLISH_TOKEN` GitHub Actions repository secret before the next release.
+
+The npm publishing account must have permission to publish both launcher names and the shared scoped platform packages. The workflow checks that the token is present before building. A failed upload can leave some npm packages published; retain the release logs and inspect registry state before retrying with the omnidist npm publish command.
 
 ---
 
