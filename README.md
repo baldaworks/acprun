@@ -186,9 +186,21 @@ Description, keywords, and MIT license metadata are defined once in `.omnidist/o
 
 ### Release setup
 
-Tag-triggered releases stage and verify the npm packages before publishing and attach native binaries to the GitHub release. Configure the `NPM_PUBLISH_TOKEN` GitHub Actions repository secret before the next release.
+Tag-triggered releases stage and verify the npm packages before publishing and attach native binaries to the GitHub release. npm publishing uses GitHub Actions OIDC through omnidist's `publish-auth: trusted` mode. The publish job has `id-token: write`; no npm publishing secret is required.
 
-The npm publishing account must have permission to publish both launcher names and the shared scoped platform packages. The workflow checks that the token is present before building. A failed upload can leave some npm packages published; retain the release logs and inspect registry state before retrying with the omnidist npm publish command.
+Sign in locally through npm web authentication with an account that has 2FA enabled and write access to both launcher names and the shared scoped platform packages. Inspect the trusted-publisher plan, then apply it through omnidist:
+
+```bash
+npx -y npm@11.16.0 login --auth-type=web --registry=https://registry.npmjs.org
+npx -y @omnidist/omnidist@latest npm trust
+npx -y @omnidist/omnidist@latest npm trust --apply
+```
+
+The plan covers all eight packages and grants publishing access to `baldaworks/acprun` using the workflow filename `omnidist-release.yml`. Complete any browser/2FA prompts from npm. Local web authentication is used to configure trust; GitHub Actions obtains its own short-lived OIDC credentials for releases. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and the [npm trust prerequisites](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
+
+npm requires a package to exist before its trusted publisher can be configured. A new package name therefore needs its initial publication through omnidist using local web authentication before applying the trust plan. Keep credentials outside the repository.
+
+A failed upload can leave some npm packages published. Retain the release logs and inspect registry state before retrying; omnidist 0.2.0 publishes platform packages first and does not skip existing versions, so replaying a partially published release can fail.
 
 ---
 

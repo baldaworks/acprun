@@ -43,5 +43,6 @@ profiles:
                 platform-package: '@baldaworks/acprun'
                 registry: https://registry.npmjs.org
                 access: public
+                publish-auth: trusted
                 repository-url: git+https://github.com/baldaworks/acprun.git
                 include-readme: true
