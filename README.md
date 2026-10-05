@@ -192,7 +192,7 @@ The plan covers all seven packages and grants publishing access to `baldaworks/a
 
 npm requires a package to exist before its trusted publisher can be configured. A new package name therefore needs its initial publication through omnidist using local web authentication before applying the trust plan. Keep credentials outside the repository.
 
-A failed upload can leave some npm packages published. Retain the release logs and inspect registry state before retrying; omnidist 0.2.0 publishes platform packages first and does not skip existing versions, so replaying a partially published release can fail.
+A failed upload can leave some npm packages published. Retain the release logs and inspect registry state before retrying; registry clients reject versions already published, so replaying a partially published release can fail.
 
 ---
 
