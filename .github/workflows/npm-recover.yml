@@ -107,7 +107,7 @@ jobs:
                   assert existing.get(key) == metadata.get(key), f'Existing {key} differs'
               print(f'{name}@{version} is already published with matching metadata; skipping')
           else:
-              directory = str(path.parent)
+              directory = str(path.parent.resolve())
               assert '\n' not in directory and '\r' not in directory
               with Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
                   output.write(f'publish=true\nlauncher_dir={directory}\n')
