@@ -21,28 +21,20 @@ It transparently handles distribution resolution across:
 
 ## Installation and quick start
 
-Install `acprun` through either npm launcher or as a Go binary.
+Install `acprun` through npm or as a Go binary.
 
 ### npm package (recommended)
 
 For repeated direct shell use, install the npm launcher globally:
 
 ```bash
-npm install --global acprun@latest
-acprun version
-```
-
-The equivalent scoped package is also available as `@baldaworks/acprun`:
-
-```bash
 npm install --global @baldaworks/acprun@latest
+acprun version
 ```
 
 For one-shot execution without global installation, run the complete `npx` command:
 
 ```bash
-npx --yes acprun@latest list
-# Equivalent scoped launcher:
 npx --yes @baldaworks/acprun@latest list
 ```
 
@@ -180,15 +172,15 @@ acprun cache clean --manifests-only
 
 ## Distribution
 
-The npm distribution uses CGO-disabled native executables for macOS and Linux on AMD64/ARM64 and Windows AMD64/ARM64 behind the equivalent [`acprun`](https://www.npmjs.com/package/acprun) and [`@baldaworks/acprun`](https://www.npmjs.com/package/@baldaworks/acprun) launchers. Both launchers share the same scoped platform packages.
+The npm distribution uses CGO-disabled native executables for macOS and Linux on AMD64/ARM64 and Windows AMD64/ARM64 behind the [`@baldaworks/acprun`](https://www.npmjs.com/package/@baldaworks/acprun) launcher and six scoped platform packages.
 
-Description, keywords, and MIT license metadata are defined once in `.omnidist/omnidist.yaml` and inherited by both npm launchers.
+Description, keywords, and MIT license metadata are defined in `.omnidist/omnidist.yaml` and included in the npm launcher.
 
 ### Release setup
 
 Tag-triggered releases stage and verify the npm packages before publishing and attach native binaries to the GitHub release. npm publishing uses GitHub Actions OIDC through omnidist's `publish-auth: trusted` mode. The publish job has `id-token: write`; no npm publishing secret is required.
 
-Sign in locally through npm web authentication with an account that has 2FA enabled and write access to both launcher names and the shared scoped platform packages. Inspect the trusted-publisher plan, then apply it through omnidist:
+Sign in locally through npm web authentication with an account that has 2FA enabled and write access to the launcher and its six platform packages. Inspect the trusted-publisher plan, then apply it through omnidist:
 
 ```bash
 npx -y npm@11.16.0 login --auth-type=web --registry=https://registry.npmjs.org
@@ -196,7 +188,7 @@ npx -y @omnidist/omnidist@latest npm trust
 npx -y @omnidist/omnidist@latest npm trust --apply
 ```
 
-The plan covers all eight packages and grants publishing access to `baldaworks/acprun` using the workflow filename `omnidist-release.yml`. Complete any browser/2FA prompts from npm. Local web authentication is used to configure trust; GitHub Actions obtains its own short-lived OIDC credentials for releases. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and the [npm trust prerequisites](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
+The plan covers all seven packages and grants publishing access to `baldaworks/acprun` using the workflow filename `omnidist-release.yml`. Complete any browser/2FA prompts from npm. Local web authentication is used to configure trust; GitHub Actions obtains its own short-lived OIDC credentials for releases. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and the [npm trust prerequisites](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
 
 npm requires a package to exist before its trusted publisher can be configured. A new package name therefore needs its initial publication through omnidist using local web authentication before applying the trust plan. Keep credentials outside the repository.
 

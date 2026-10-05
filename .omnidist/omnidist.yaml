@@ -37,9 +37,7 @@ profiles:
             cgo: false
         distributions:
             npm:
-                package: acprun
-                aliases:
-                    - '@baldaworks/acprun'
+                package: '@baldaworks/acprun'
                 platform-package: '@baldaworks/acprun'
                 registry: https://registry.npmjs.org
                 access: public
